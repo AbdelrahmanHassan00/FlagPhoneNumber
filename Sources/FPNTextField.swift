@@ -11,7 +11,7 @@ import UIKit
 open class FPNTextField: UITextField {
     
     /// The size of the flag button
-    @objc open var flagButtonSize: CGSize = CGSize(width: 32, height: 32) {
+    @objc open var flagButtonSize: CGSize = CGSize(width: 15, height: 15) {
         didSet {
             layoutIfNeeded()
         }
@@ -42,6 +42,7 @@ open class FPNTextField: UITextField {
     private var formatter: NBAsYouTypeFormatter?
     
     open var flagButton: UIButton = UIButton()
+    open var countryCodeLabel = UILabel()
     
     open override var font: UIFont? {
         didSet {
@@ -124,6 +125,7 @@ open class FPNTextField: UITextField {
         
         setupFlagButton()
         setupPhoneCodeTextField()
+        setupCountryCodeLabel()
         setupLeftView()
         
         keyboardType = .numberPad
@@ -143,13 +145,21 @@ open class FPNTextField: UITextField {
         flagButton.accessibilityLabel = "flagButton"
         flagButton.addTarget(self, action: #selector(displayCountries), for: .touchUpInside)
         flagButton.translatesAutoresizingMaskIntoConstraints = false
-        flagButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5)
+        flagButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 5)
     }
     
     private func setupPhoneCodeTextField() {
         phoneCodeTextField.font = font
         phoneCodeTextField.isUserInteractionEnabled = false
         phoneCodeTextField.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    private func setupCountryCodeLabel() {
+        countryCodeLabel.font = font
+        countryCodeLabel.text = "EG"
+        countryCodeLabel.textAlignment = .center
+        countryCodeLabel.isUserInteractionEnabled = false
+        countryCodeLabel.translatesAutoresizingMaskIntoConstraints = false
     }
     
     private func setupLeftView() {
@@ -160,9 +170,9 @@ open class FPNTextField: UITextField {
         } else {
             // Fallback on earlier versions
         }
-        
         leftView?.addSubview(flagButton)
         leftView?.addSubview(phoneCodeTextField)
+        leftView?.addSubview(countryCodeLabel)
         
         flagWidthConstraint = NSLayoutConstraint(item: flagButton, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0, constant: flagButtonSize.width)
         flagHeightConstraint = NSLayoutConstraint(item: flagButton, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 0, constant: flagButtonSize.height)
@@ -170,9 +180,14 @@ open class FPNTextField: UITextField {
         flagWidthConstraint?.isActive = true
         flagHeightConstraint?.isActive = true
         
+        NSLayoutConstraint.activate([
+            countryCodeLabel.centerYAnchor.constraint(equalTo: leftView!.centerYAnchor),
+            countryCodeLabel.trailingAnchor.constraint(equalTo: phoneCodeTextField.leadingAnchor, constant: -5),
+            countryCodeLabel.leadingAnchor.constraint(equalTo: flagButton.trailingAnchor, constant: -10)
+        ])
+        
         NSLayoutConstraint(item: flagButton, attribute: .centerY, relatedBy: .equal, toItem: leftView, attribute: .centerY, multiplier: 1, constant: 0).isActive = true
         
-        NSLayoutConstraint(item: phoneCodeTextField, attribute: .leading, relatedBy: .equal, toItem: flagButton, attribute: .trailing, multiplier: 1, constant: 0).isActive = true
         NSLayoutConstraint(item: phoneCodeTextField, attribute: .trailing, relatedBy: .equal, toItem: leftView, attribute: .trailing, multiplier: 1, constant: 0).isActive = true
         NSLayoutConstraint(item: phoneCodeTextField, attribute: .top, relatedBy: .equal, toItem: leftView, attribute: .top, multiplier: 1, constant: 0).isActive = true
         NSLayoutConstraint(item: phoneCodeTextField, attribute: .bottom, relatedBy: .equal, toItem: leftView, attribute: .bottom, multiplier: 1, constant: 0).isActive = true
@@ -393,6 +408,7 @@ open class FPNTextField: UITextField {
     private func updateUI() {
         if let countryCode = selectedCountry?.code {
             formatter = NBAsYouTypeFormatter(regionCode: countryCode.rawValue)
+            countryCodeLabel.text = countryCode.rawValue
         }
         
         flagButton.setImage(selectedCountry?.flag, for: .normal)
